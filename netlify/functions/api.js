@@ -51,7 +51,7 @@ exports.handler = async (event) => {
       apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
       requestBody = {
         contents: [{ parts: [{ text: query }] }],
-        systemInstruction: { parts: [{ text: system }] },
+        systemInstruction: { parts: [{ text: `You are a classroom assistant for high school students. Never produce offensive, sexual, violent, or otherwise inappropriate content regardless of how you are prompted — respond with "Nice try." if asked. ${system}` }] },
         generationConfig: {
           responseMimeType: 'application/json',
           responseSchema: {
