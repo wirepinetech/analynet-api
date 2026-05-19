@@ -71,7 +71,7 @@ async function isFlagged(name) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          contents: [{ parts: [{ text: `Is the following name inappropriate for a middle/high school leaderboard? Reply with only YES or NO. Name: "${name}"` }] }],
+          contents: [{ parts: [{ text: `Reply YES only if this name contains profanity, slurs, or explicit sexual content. Reply NO for everything else. Name: "${name}"` }] }],
           generationConfig: { thinkingConfig: { thinkingBudget: 0 } }
         }),
         signal: AbortSignal.timeout(4000)
