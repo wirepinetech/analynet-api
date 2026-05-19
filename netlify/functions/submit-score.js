@@ -1,7 +1,5 @@
 const { getStore } = require('@netlify/blobs');
 
-const GEMINI_URL = 'https://api.analynet.xyz/.netlify/functions/gemini';
-
 const SUBSTITUTE_NAMES = [
   'Valedictorian', 'AllAs', 'TeachPet', 'HallPass',
   'ExtraCredit', 'DeansList', 'GoldStar', 'FrontRow'
@@ -33,7 +31,7 @@ exports.handler = async (event) => {
       return { statusCode: 400, headers, body: JSON.stringify({ error: 'Missing or invalid fields' }) };
     }
 
-    // Gemini profanity check
+    // Direct Gemini profanity check
     const flagged = await isFlagged(name);
     if (flagged) {
       name = SUBSTITUTE_NAMES[Math.floor(Math.random() * SUBSTITUTE_NAMES.length)];
@@ -64,18 +62,28 @@ exports.handler = async (event) => {
 
 async function isFlagged(name) {
   try {
-    const response = await fetch(GEMINI_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        prompt: `Is the following name inappropriate for a middle/high school leaderboard? Reply with only YES or NO. Name: "${name}"`
-      })
-    });
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) return false;
+
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: `Is the following name inappropriate for a middle/high school leaderboard? Reply with only YES or NO. Name: "${name}"` }] }],
+          generationConfig: { thinkingConfig: { thinkingBudget: 0 } }
+        }),
+        signal: AbortSignal.timeout(4000)
+      }
+    );
+
     const data = await response.json();
-    return data.text?.trim().toUpperCase().startsWith('YES');
+    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim().toUpperCase() ?? '';
+    return text.startsWith('YES');
   } catch (err) {
     console.error('Gemini filter error:', err);
-    return false; // if filter fails, allow the name through
+    return false; // fail open — don't break scoring if filter fails
   }
 }
 
