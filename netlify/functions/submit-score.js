@@ -26,7 +26,11 @@ exports.handler = async (event) => {
       return { statusCode: 400, headers, body: JSON.stringify({ error: 'Missing or invalid fields' }) };
     }
 
-    const store = getStore('leaderboards');
+    const store = getStore({
+      name: 'leaderboards',
+      siteID: process.env.NETLIFY_SITE_ID,
+      token: process.env.NETLIFY_TOKEN
+    });
     const key = `game-${gameId}`;
     const existing = await store.get(key, { type: 'json' });
     const scores = Array.isArray(existing) ? existing : [];

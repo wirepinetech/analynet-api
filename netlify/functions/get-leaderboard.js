@@ -22,7 +22,11 @@ exports.handler = async (event) => {
       return { statusCode: 400, headers, body: JSON.stringify({ error: 'Missing gameId' }) };
     }
 
-    const store = getStore('leaderboards');
+    const store = getStore({
+      name: 'leaderboards',
+      siteID: process.env.NETLIFY_SITE_ID,
+      token: process.env.NETLIFY_TOKEN
+    });
     const key = `game-${gameId}`;
     const scores = await store.get(key, { type: 'json' });
 
