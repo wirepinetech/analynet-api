@@ -52,7 +52,7 @@ exports.handler = async (event) => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestBody),
-        signal: AbortSignal.timeout(4000)
+        signal: AbortSignal.timeout(9000)
       });
       data = await response.json();
       if (response.status !== 503) break;
